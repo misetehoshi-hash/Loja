@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loja Moderna</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body style="display: none;">
+    <div id="notification-container"></div>
+    
+    <!-- Painel da Loja (Compras) -->
+    <div id="shop-container" class="animate__animated animate__fadeIn">
+        <header class="shop-header">
+            <div class="shop-title">
+                <h1 id="shop-name">Loja</h1>
+                <span id="current-category">Categoria</span>
+            </div>
+            <button id="close-button">
+                <i class="fas fa-times"></i>
+            </button>
+        </header>
+
+        <main class="shop-content">
+            <aside class="categories-sidebar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar itens...">
+                </div>
+                <div class="categories-list"></div>
+                <!-- Abas de modo de compra -->
+                <div class="purchase-mode-tabs">
+                    <button id="mode-normal" class="mode-tab active">Compra Normal</button>
+                    <button id="mode-bulk" class="mode-tab">Compra Granel</button>
+                    <button id="mode-reservations" class="mode-tab">Minhas Reservas</button>
+                </div>
+            </aside>
+
+            <section class="items-container">
+                <div class="items-header">
+                    <div class="items-sort">
+                        <select id="sort-select">
+                            <option value="name">Nome (A-Z)</option>
+                            <option value="price-low">Menor Preço</option>
+                            <option value="price-high">Maior Preço</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="items-grid"></div>
+            </section>
+
+            <aside class="cart-sidebar">
+                <div class="cart-header">
+                    <h2>
+                        Carrinho <span id="cart-count">0</span>
+                    </h2>
+                    <button id="clear-cart" class="clear-cart-btn"><i class="fas fa-trash"></i> Limpar</button>
+                </div>
+                <div class="cart-items"></div>
+                <div class="cart-footer">
+                    <div class="cart-summary">
+                        <div class="summary-item"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+                        <div class="summary-item"><span>Taxa (10%)</span><span id="tax">$0.00</span></div>
+                        <div class="summary-item total"><span>Total</span><span id="total-amount">$0.00</span></div>
+                    </div>
+                    <!-- Informação do desconto (visível apenas no modo granel) -->
+                    <div id="bulk-info" style="display: none; margin-bottom: 10px; font-size: 0.9rem; color: var(--primary-light);">
+                        <i class="fas fa-tag"></i> Desconto de <span id="bulk-discount-value">0</span>% aplicado.
+                    </div>
+                    <button id="checkout-button" class="checkout-button" disabled>
+                        <i class="fas fa-shopping-cart"></i> Finalizar Compra
+                    </button>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Painel de Gerenciamento -->
+    <div id="management-panel" class="animate__animated animate__fadeIn" style="display: none;">
+        <header class="shop-header">
+            <div class="shop-title">
+                <h1 id="manage-shop-name">Gerenciar Loja</h1>
+                <span>Estoque e Ofertas</span>
+            </div>
+            <button id="close-management-button"><i class="fas fa-times"></i></button>
+        </header>
+        <main class="management-content">
+            <!-- Abas internas do gerenciamento -->
+            <div class="management-tabs">
+                <button id="manage-stock-tab" class="management-tab active">Estoque Normal</button>
+                <button id="manage-offers-tab" class="management-tab">Ofertas a Granel</button>
+                <button id="manage-logs-tab" class="management-tab">Logs</button>
+            </div>
+
+            <!-- Painel de Estoque Normal -->
+            <div id="manage-stock-panel" class="management-panel active">
+                <section class="current-stock">
+                    <h2><i class="fas fa-boxes"></i> Estoque Atual</h2>
+                    <div class="stock-table">
+                        <table>
+                            <thead><tr><th>Item</th><th>Quantidade</th><th>Preço Unit.</th><th>Ações</th></tr></thead>
+                            <tbody id="stock-table-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+                <section class="add-item-section">
+                    <h2><i class="fas fa-plus-circle"></i> Adicionar Item do Inventário</h2>
+                    <div class="add-item-form">
+                        <div class="form-group">
+                            <label for="inv-item-select">Item:</label>
+                            <select id="inv-item-select"><option value="">Selecione um item</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="add-quantity">Quantidade:</label>
+                            <input type="number" id="add-quantity" min="1" value="1">
+                        </div>
+                        <button id="add-to-shop-btn" class="action-btn"><i class="fas fa-cart-plus"></i> Adicionar à Loja</button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Painel de Ofertas a Granel -->
+            <div id="manage-offers-panel" class="management-panel">
+                <section class="current-offers">
+                    <h2><i class="fas fa-tags"></i> Ofertas Ativas</h2>
+                    <div class="offers-table">
+                        <table>
+                            <thead><tr><th>Item</th><th>Qtd. Total</th><th>Qtd. Mínima</th><th>Desconto</th><th>Status</th><th>Ações</th></tr></thead>
+                            <tbody id="offers-table-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+                <section class="create-offer-section">
+                    <h2><i class="fas fa-plus-circle"></i> Criar Nova Oferta</h2>
+                    <div class="create-offer-form">
+                        <div class="form-group">
+                            <label for="offer-item-select">Item:</label>
+                            <select id="offer-item-select">
+                                <option value="">Selecione um item</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="offer-total-quantity">Quantidade Total:</label>
+                            <input type="number" id="offer-total-quantity" min="1" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="offer-min-quantity">Quantidade Mínima por Compra:</label>
+                            <input type="number" id="offer-min-quantity" min="1" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="offer-discount">Desconto (%):</label>
+                            <select id="offer-discount">
+                                <option value="10">10%</option>
+                                <option value="15">15%</option>
+                                <option value="20">20%</option>
+                                <option value="25">25%</option>
+                                <option value="30">30%</option>
+                            </select>
+                        </div>
+                        <button id="create-offer-btn" class="action-btn"><i class="fas fa-plus"></i> Criar Oferta</button>
+                    </div>
+                    <p class="info-note">A oferta só aparecerá para clientes quando a quantidade total estiver disponível no estoque.</p>
+                </section>
+            </div>
+
+            <!-- Painel de Logs -->
+            <div id="manage-logs-panel" class="management-panel">
+                <div class="logs-tabs">
+                    <button id="logs-purchases-tab" class="logs-tab active">Compras</button>
+                    <button id="logs-management-tab" class="logs-tab">Gestão de Estoque</button>
+                    <button id="logs-top-tab" class="logs-tab">Melhores Clientes</button>
+                </div>
+
+                <!-- Tabela de Compras -->
+                <div id="logs-purchases" class="logs-table-container active">
+                    <table class="logs-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Cliente</th>
+                                <th>Grupo</th>
+                                <th>Itens</th>
+                                <th>Subtotal</th>
+                                <th>Taxa</th>
+                                <th>Total</th>
+                                <th>Pagamento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="purchases-table-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- Tabela de Logs de Gestão -->
+                <div id="logs-management" class="logs-table-container">
+                    <table class="logs-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Ação</th>
+                                <th>Item</th>
+                                <th>Quantidade</th>
+                                <th>Preço Unit.</th>
+                                <th>Responsável</th>
+                                <th>Grupo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="management-table-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- Tabela de Melhores Clientes -->
+                <div id="logs-top" class="logs-table-container">
+                    <table class="logs-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Grupo</th>
+                                <th>Compras</th>
+                                <th>Total Gasto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
